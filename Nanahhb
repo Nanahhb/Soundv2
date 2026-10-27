@@ -1,0 +1,292 @@
+
+local Players = game:GetService("Players")
+local SoundService = game:GetService("SoundService")
+local UIS = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "NanahhbCatSound"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local cream = Color3.fromRGB(255, 250, 235)
+local pink = Color3.fromRGB(255, 205, 215)
+local blue = Color3.fromRGB(85, 180, 255)
+local brown = Color3.fromRGB(100, 75, 70)
+local green = Color3.fromRGB(205, 240, 190)
+
+local sound = Instance.new("Sound")
+sound.Name = "NanahhbMusic"
+sound.Looped = true
+sound.Volume = 0.5
+sound.Parent = SoundService
+
+local function round(obj, radius)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, radius)
+    c.Parent = obj
+end
+
+local function stroke(obj, color, thickness)
+    local s = Instance.new("UIStroke")
+    s.Color = color
+    s.Thickness = thickness
+    s.Parent = obj
+end
+
+local function makeButton(parent, text, color, size, pos)
+    local b = Instance.new("TextButton")
+    b.Text = text
+    b.Size = size
+    b.Position = pos
+    b.BackgroundColor3 = color
+    b.TextColor3 = brown
+    b.TextSize = 15
+    b.Font = Enum.Font.GothamBold
+    b.AutoButtonColor = true
+    b.Parent = parent
+    round(b, 13)
+    return b
+end
+
+-- MENU CHÍNH
+local main = Instance.new("Frame")
+main.Name = "MainMenu"
+main.Size = UDim2.fromOffset(300, 275)
+main.Position = UDim2.new(0.5, -150, 0.5, -137)
+main.BackgroundColor3 = cream
+main.Parent = gui
+round(main, 22)
+stroke(main, pink, 2)
+
+local header = Instance.new("TextLabel")
+header.Name = "Header"
+header.Size = UDim2.new(1, -12, 0, 58)
+header.Position = UDim2.fromOffset(6, 6)
+header.BackgroundColor3 = pink
+header.Text = "🐱 Nanahhb\nCAT SOUND PLAYER ♡"
+header.TextColor3 = brown
+header.TextSize = 18
+header.Font = Enum.Font.GothamBold
+header.Active = true
+header.Parent = main
+round(header, 17)
+
+local input = Instance.new("TextBox")
+input.Size = UDim2.new(1, -28, 0, 42)
+input.Position = UDim2.fromOffset(14, 78)
+input.BackgroundColor3 = Color3.new(1, 1, 1)
+input.PlaceholderText = "Nhập Sound ID Roblox..."
+input.Text = ""
+input.TextColor3 = brown
+input.TextSize = 14
+input.ClearTextOnFocus = false
+input.Parent = main
+round(input, 12)
+
+local status = Instance.new("TextLabel")
+status.Size = UDim2.new(1, -20, 0, 28)
+status.Position = UDim2.fromOffset(10, 123)
+status.BackgroundTransparency = 1
+status.Text = "♡ Sẵn sàng phát nhạc"
+status.TextColor3 = brown
+status.TextSize = 12
+status.Parent = main
+
+local on = makeButton(main, "▶ ON", green,
+    UDim2.new(0.5, -20, 0, 43),
+    UDim2.fromOffset(14, 160))
+
+local off = makeButton(main, "■ OFF", pink,
+    UDim2.new(0.5, -20, 0, 43),
+    UDim2.new(0.5, 6, 0, 160))
+
+local footer = Instance.new("TextLabel")
+footer.Size = UDim2.new(1, -10, 0, 25)
+footer.Position = UDim2.fromOffset(5, 220)
+footer.BackgroundTransparency = 1
+footer.Text = "♡ meow meow ♡"
+footer.TextColor3 = brown
+footer.TextSize = 12
+footer.Parent = main
+
+-- NÚT MÈO VUÔNG
+local toggle = makeButton(gui, "🐱",
+    Color3.fromRGB(230, 244, 255),
+    UDim2.fromOffset(58, 58),
+    UDim2.new(0, 18, 0.5, -29))
+
+toggle.Name = "FloatingCatButton"
+toggle.TextSize = 29
+toggle.ZIndex = 5
+stroke(toggle, blue, 3)
+
+-- Chạm để bật/tắt menu; kéo để di chuyển nút
+local dragging = false
+local moved = false
+local startPosition
+local startPoint
+local activeTouch
+local mouseHeld = false
+
+local function moveToggle(point)
+    local delta = point - startPoint
+
+    if delta.Magnitude > 8 then
+        moved = true
+    end
+
+    if moved then
+        local camera = workspace.CurrentCamera
+        local viewport = camera and camera.ViewportSize
+        local size = toggle.AbsoluteSize
+
+        local x = math.clamp(
+            startPosition.X.Offset + delta.X,
+            0, (viewport and viewport.X or 800) - size.X
+        )
+        local y = math.clamp(
+            startPosition.Y.Offset + delta.Y,
+            0, (viewport and viewport.Y or 600) - size.Y
+        )
+
+        toggle.Position = UDim2.fromOffset(x, y)
+    end
+end
+
+toggle.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        moved = false
+        activeTouch = i
+        startPoint = i.Position
+        startPosition = toggle.Position
+
+    elseif i.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        mouseHeld = true
+        moved = false
+        startPoint = i.Position
+        startPosition = toggle.Position
+    end
+end)
+
+UIS.InputChanged:Connect(function(i)
+    if not dragging then return end
+
+    if i.UserInputType == Enum.UserInputType.Touch
+        and i == activeTouch then
+        moveToggle(i.Position)
+
+    elseif i.UserInputType == Enum.UserInputType.MouseMovement
+        and mouseHeld then
+        moveToggle(i.Position)
+    end
+end)
+
+UIS.InputEnded:Connect(function(i)
+    local finishedTouch =
+        i.UserInputType == Enum.UserInputType.Touch
+        and i == activeTouch
+
+    local finishedMouse =
+        i.UserInputType == Enum.UserInputType.MouseButton1
+        and mouseHeld
+
+    if not finishedTouch and not finishedMouse then
+        return
+    end
+
+    dragging = false
+    mouseHeld = false
+    activeTouch = nil
+
+    if not moved then
+        main.Visible = not main.Visible
+    end
+end)
+
+-- PHÁT NHẠC: ON / OFF / ON LẠI
+local lastId = ""
+
+on.Activated:Connect(function()
+    local typedId = input.Text:match("^%s*(%d+)%s*$")
+
+    if typedId then
+        lastId = typedId
+    end
+
+    if lastId == "" then
+        status.Text = "⚠ Hãy nhập Sound ID!"
+        return
+    end
+
+    sound:Stop()
+    sound.SoundId = "rbxassetid://" .. lastId
+    sound.Looped = true
+    sound.TimePosition = 0
+
+    local ok = pcall(function()
+        sound:Play()
+    end)
+
+    if ok then
+        status.Text = "▶ Đang phát nhạc lặp lại ♡"
+    else
+        status.Text = "⚠ Không thể phát nhạc"
+    end
+end)
+
+off.Activated:Connect(function()
+    sound:Stop()
+    status.Text = "■ Đã tắt nhạc ♡"
+end)
+
+-- KÉO MENU CHÍNH BẰNG THANH TIÊU ĐỀ
+local menuDragging = false
+local menuStartPoint
+local menuStartPosition
+local menuTouch
+
+header.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.Touch then
+        menuDragging = true
+        menuTouch = i
+        menuStartPoint = i.Position
+        menuStartPosition = main.Position
+    elseif i.UserInputType == Enum.UserInputType.MouseButton1 then
+        menuDragging = true
+        menuStartPoint = i.Position
+        menuStartPosition = main.Position
+    end
+end)
+
+UIS.InputChanged:Connect(function(i)
+    if not menuDragging then return end
+
+    local validTouch = i.UserInputType == Enum.UserInputType.Touch
+        and i == menuTouch
+    local validMouse = i.UserInputType == Enum.UserInputType.MouseMovement
+        and UIS:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)
+
+    if validTouch or validMouse then
+        local delta = i.Position - menuStartPoint
+        main.Position = UDim2.new(
+            menuStartPosition.X.Scale,
+            menuStartPosition.X.Offset + delta.X,
+            menuStartPosition.Y.Scale,
+            menuStartPosition.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UIS.InputEnded:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.Touch
+        and i == menuTouch then
+        menuDragging = false
+        menuTouch = nil
+    elseif i.UserInputType == Enum.UserInputType.MouseButton1 then
+        menuDragging = false
+    end
+end)
